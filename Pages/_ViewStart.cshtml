@@ -1,0 +1,27 @@
+﻿@if (User.Identity.IsAuthenticated)
+{
+    @if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+    }
+    @if (User.IsInRole("User"))
+    {
+        Layout = "_Layout";
+    }
+    @if (User.IsInRole("Accountant"))
+    {
+        Layout = "_BankLayout";
+    }
+    @if (User.IsInRole("CRD"))
+    {
+        Layout = "_CRDLayout";
+    }
+}
+else
+{
+    Layout = "_Layout";
+}
+
+@*@{
+        Layout = "_Layout";
+    }*@

@@ -1,0 +1,84 @@
+﻿@page
+@model EMedicalClaimRefundSystem.Pages.UserApplicationFormModel
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "User Application Form";
+}
+<h1>@ViewData["Title"]</h1>
+<p>Submit Application Form to start Refund process</p>
+
+<form  method="post">
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <label class="col-md-2">Name of Patient:</label>
+        <input class="col-md-2" asp-for="Input.PatientName" id="PatientId"/>
+        <div class="col-md-4"></div>
+        <label class="col-md-2">Phone:</label>
+        <input class="col-md-2" asp-for="Input.PhoneNumber" id="PhoneId"/>
+    </div>
+    <div class="row">
+        <label class="col-md-2">Address:</label>
+        <input class="col-md-2" asp-for="Input.Address" id="AddressId"/>
+    </div>
+    <div class="mb-3">
+        <label for="validationTextarea">Application Content:</label>
+        <textarea class="form-control" asp-for="Input.AppNote" id="RefundAppContentId" rows="10" placeholder="Reason for refund/withdraw or transfer request." required></textarea>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <input type="file" id="fUpload" name="files" multiple class="form-control" accept="image/jpeg" value="Select Slip Image"/>
+        </div>
+    </div>
+    @*<div class="row">
+            <div class="col-md-12" style="padding-top:10px;">
+                <input type="button" id="btnUpload" value="Upload" />
+            </div>
+        </div>*@
+    <div class="row">
+        <div class="col-md-12" style="padding-top:10px;">
+            <button type="button" id="ApplyId" class="btn btn-primary">Apply for Refund!</button>
+        </div>
+    </div>
+    @*<button type="button" id="ApplyId" class="btn btn-primary">Apply for Refund!</button>*@
+</form>
+<script>
+$(document).ready(function () {
+    $('#ApplyId').on('click', function () {       
+      var files = $('#fUpload').prop("files");
+      var fdata = new FormData();
+      for (var i = 0; i < files.length; i++)
+      {
+          fdata.append("files", files[i]);
+        }
+        fdata.append("Patient", $("#PatientId").val());
+        fdata.append("Phone", $("#PhoneId").val());
+        fdata.append("Address", $("#AddressId").val());
+       fdata.append("AppNote", $("#RefundAppContentId").val());      
+        $.ajax({
+            type: "POST",
+            url: "/User/UserApplicationForm?handler=Upload",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("X-XSRF-Token",
+                    $('input:hidden[name="__RequestVerificationToken"]').val());
+            },
+            data: fdata,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+            if (response.result == 'InvalidLogin') {
+            //show invalid login
+            }
+            else if (response.result == 'Error') {
+                //show error
+            }
+            else if (response.result == 'Redirect'){
+                //redirecting to main page from here for the time being.
+                window.location = response.url;
+            }
+            }
+        });           
+   })
+});
+</script>

@@ -1,0 +1,25 @@
+﻿@if (User.Identity.IsAuthenticated)
+{
+    @if (User.IsInRole("Admin"))
+    {
+        Layout = "/Pages/Shared/_AdminLayout.cshtml";
+
+    }
+    @if (User.IsInRole("User"))
+    {
+        Layout = "/Pages/Shared/_Layout.cshtml";
+    }
+    @if (User.IsInRole("Accountant"))
+    {
+        Layout = "/Pages/Shared/_BankLayout.cshtml";
+    }
+    @if (User.IsInRole("CRD"))
+    {
+        Layout = "/Pages/Shared/_CRDLayout.cshtml";
+    }
+}
+else
+{
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+

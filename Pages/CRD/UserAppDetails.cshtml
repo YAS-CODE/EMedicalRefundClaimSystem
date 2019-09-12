@@ -1,0 +1,88 @@
+﻿@page
+@model EMedicalClaimRefundSystem.Pages.CRD.UserAppDetailsModel
+@{
+    ViewData["Title"] = "UserAppDetails";
+    Layout = "~/Pages/Shared/_PopupLayout.cshtml";
+}
+
+    <div class="container">
+        <div class="">
+            <form method="post" class="form-horizontal">
+                <input asp-for="UserAppViewModel.Id" hidden />
+                <h4>User Application Details.</h4>
+                <hr />
+                <div class="row">
+                    <label class="col-md-2"><b>User: </b></label>
+                    <div class="col-md-2">
+                        <p>@Model.UserAppViewModel.AppliedByUserName</p>
+                    </div>
+                    <div class="offset-md-4 col-md-2">
+                        <label><b>Date: </b></label>
+                    </div>
+                    <div class="col-md-2">
+                        <p>@Model.UserAppViewModel.AppliedDate</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <label class="col-md-2"><b>Patient: </b></label>
+                    <div class="col-md-2">
+                        <p>@Model.UserAppViewModel.PatientName</p>
+                    </div>
+                    <div class="offset-md-4 col-md-2">
+                        <label><b>Phone: </b></label>
+                    </div>
+                    <div class="col-md-2">
+                        <p>@Model.UserAppViewModel.PhoneNumber</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <label class="col-md-2"><b>Address: </b></label>
+                    <div class="col-md-2">
+                        <p>@Model.UserAppViewModel.Address</p>
+                    </div>
+                </div>
+                <br />
+                <br />
+                <div class="row">
+                    <label><b>Application Submited: </b></label>
+                </div>
+                <div class="row">
+                    <div class="offset-md-2">
+                        <p>@Model.UserAppViewModel.Notes </p>
+                    </div>
+
+                </div>               
+                <br />
+                <br />
+                <div class="row">
+                    <label><b>Attahments: </b></label>
+                </div>
+                <div class="row">
+                    <div class="offset-md-2">
+                        @if (Model.UserAppViewModel.Attachs != null)
+                        {
+                            @foreach (var file in Model.UserAppViewModel.Attachs)
+                            {
+                                @*<a href="javascript:DownloadSlip('@file')">@file</a>*@
+                                <input type="submit" asp-page-handler="DownloadFile"
+                                       class="btn btn-link input-sm" name="slipname" value="@file">
+                                @*@Html.ActionLink(file,"OnPostDownloadFile",new { SlipName = file , Id = 1234, appid = Model.UserAppViewModel.Id})*@
+                            }
+                        }
+                        else
+                        {
+                            <p>No file attached!</p>
+                        }
+                    </div>
+
+                </div>
+                <br />
+                <div class="row text-center">
+                    <input type="submit" class="btn btn-primary offset-2 col-md-2" asp-page-handler="Accepted" value="Accept App!" />
+                    <input type="submit" class="btn btn-danger offset-1 col-md-2" asp-page-handler="Rejected" value="Reject App!" />
+                </div>
+
+            </form>
+        </div>
+    </div>
+

@@ -1,0 +1,199 @@
+﻿@page
+@model EMedicalClaimRefundSystem.Pages.CRD.UserApplicationsModel
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "User Applied Applications";
+}
+
+<h1>@ViewData["Title"]</h1>
+<div class="container">
+    @Html.AntiForgeryToken()
+    <br />
+    <br />
+    <div style="width:90%; margin:0 auto;">
+        <table id="usersTable" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0">
+            <thead class="thead-dark">
+                <tr>
+                    <th><input name="select_all" value="1" type="checkbox"></th>
+                    <th>ID</th>
+                    <th>Patient</th>
+                    <th>Phone</th>
+                    <th>Notes</th>
+                    <th>Status</th>
+                    <th>Applied By</th>
+                    <th>Applied Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<script>
+
+    var rows_selected = [];
+    let table;
+    //
+    // Updates "Select all" control in a data table
+    //
+    function updateDataTableSelectAllCtrl(table) {
+        var $table = table.table().node();
+        var $chkbox_all = $('tbody input[type="checkbox"]', $table);
+        var $chkbox_checked = $('tbody input[type="checkbox"]:checked', $table);
+        var chkbox_select_all = $('thead input[name="select_all"]', $table).get(0);
+
+        // If none of the checkboxes are checked
+        if ($chkbox_checked.length === 0) {
+            chkbox_select_all.checked = false;
+            if ('indeterminate' in chkbox_select_all) {
+                chkbox_select_all.indeterminate = false;
+            }
+
+            // If all of the checkboxes are checked
+        } else if ($chkbox_checked.length === $chkbox_all.length) {
+            chkbox_select_all.checked = true;
+            if ('indeterminate' in chkbox_select_all) {
+                chkbox_select_all.indeterminate = false;
+            }
+
+            // If some of the checkboxes are checked
+        } else {
+            chkbox_select_all.checked = true;
+            if ('indeterminate' in chkbox_select_all) {
+                chkbox_select_all.indeterminate = true;
+            }
+        }
+    }
+    $(document).ready(function () {
+        table = $('#usersTable').DataTable({
+            "processing": true,
+            "serverSide": false,
+            "ajax": {
+                "url": "/CRD/UserApplications?handler=RequestedApps",
+                "type": "GET",
+                "beforeSend" : function (xhr) {
+                    xhr.setRequestHeader("X-XSRF-Token",
+                        $('input:hidden[name="__RequestVerificationToken"]').val());
+                },
+                "dataSrc": '',
+            },
+            //data : response,
+            searching: true,
+            "pageLength": 50,
+            columns: [
+                {
+                    data:   "Id",
+                    render: function ( data, type, row ) {
+
+                            return '<input id='+data+' type="checkbox">';
+                    }
+                },
+                {
+                    "render": function (data, type, full, meta) {
+                        return meta.row;
+                    }
+                },
+                {
+                    "data" : "PatientName" ,                   
+                },
+                {
+                    "data" : "PhoneNumber",                    
+                },
+                {
+                    "data": "Notes",
+                    "render": function (data, type, full, meta) {
+                        var length = 15;
+                        var trimstr = data.length > length ? data.substring(0, length - 3) + " ..." : data;
+                        return trimstr;
+                    }
+                },
+                {
+                    "data": "Status",
+                    "render": function (data, type, full, meta) {
+                        switch (data) {
+                            case "0": return "User Claimed";
+                            case "1": return "CRD Accepted";
+                            case "2": return "CRD Rejected";
+                            case "3": return "Bank Rejected";
+                            case "4": return "Refunded Sucessfully";
+                            case "5": return "User Cenceled";
+                            default: return "-.-";
+                        }
+                    }
+                },
+                {
+                    "data": "AppliedByUserName",
+                    "render": function (data, type, full, meta) {
+                        return JSON.stringify(data);
+                    }
+                },
+                { "data": "AppliedDate" },
+                {
+                    data:   "Id",
+                    render: function (data, type, row) {
+                        return '<button align="center" type="button" class="btn btn-default btn-circle btn-lg" onclick=OpenDetails('+data+')><i class="fa fa-ellipsis-v"></i></button>';
+                    }
+                }
+            ],
+        });
+
+
+
+        // Handle click on checkbox
+        $('#usersTable tbody').on('click', 'input[type="checkbox"]', function (e) {
+            var $row = $(this).closest('tr');
+
+            // Get row data
+            var data = table.row($row).data();
+
+            // Get row ID
+            var rowId = data.Id;
+
+            // Determine whether row ID is in the list of selected row IDs
+            var index = $.inArray(rowId, rows_selected);
+
+            // If checkbox is checked and row ID is not in list of selected row IDs
+            if (this.checked && index === -1) {
+                rows_selected.push(rowId);
+
+                // Otherwise, if checkbox is not checked and row ID is in list of selected row IDs
+            } else if (!this.checked && index !== -1) {
+                rows_selected.splice(index, 1);
+            }
+
+            if (this.checked) {
+                $row.addClass('selected');
+            } else {
+                $row.removeClass('selected');
+            }
+
+            // Update state of "Select all" control
+            updateDataTableSelectAllCtrl(table);
+
+            // Prevent click event from propagating to parent
+            e.stopPropagation();
+        });
+
+
+        // Handle click on "Select all" control
+        $('thead input[name="select_all"]', table.table().container()).on('click', function (e) {
+            if (this.checked) {
+                $('#usersTable tbody input[type="checkbox"]:not(:checked)').trigger('click');
+            } else {
+                $('#usersTable tbody input[type="checkbox"]:checked').trigger('click');
+            }
+
+            // Prevent click event from propagating to parent
+            e.stopPropagation();
+        });
+
+    });            
+    function OpenDetails(appid) {
+            //Pass this values to new page
+            var url = "/CRD/UserAppDetails?appid="+appid;
+            window.open(url,'_blank', 'height=500,width=800,status=yes,toolbar=no,menubar=no,location=no,scrollbars=yes,resizable=no,titlebar=no');
+            return false;
+        }
+</script>
